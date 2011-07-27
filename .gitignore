@@ -1,2 +1,12 @@
 *.ali
 *.o
+echopool
+echoserver
+hello
+readself
+twotasking
+*.ali
+vectors
+runtests
+/build
+/obj
