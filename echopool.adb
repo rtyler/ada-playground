@@ -1,14 +1,16 @@
 --
 --  Echo server!
 
-private with Ada.Text_IO;
-private with Ada.Streams;
-private with GNAT.Sockets;
+private with Ada.Containers.Vectors,
+             Ada.Text_IO,
+             Ada.Streams,
+             GNAT.Sockets;
 
 procedure EchoPool is
-    use Ada.Text_IO;
-    use Ada.Streams;
-    use GNAT.Sockets;
+    use Ada.Containers,
+        Ada.Text_IO,
+        Ada.Streams,
+        GNAT.Sockets;
 
     ServerSock : Socket_Type;
     ClientSock : Socket_Type;
@@ -27,7 +29,7 @@ procedure EchoPool is
             accept Handle (Client_Socket : Socket_Type) do
                 declare
                     Channel : Stream_Access := Stream (Client_Socket);
-                    Char : Character;
+                    -- Char : Character;
                     Data : Ada.Streams.Stream_Element_Array (1 .. 1);
                     Offset : Ada.Streams.Stream_Element_Count;
                 begin
@@ -46,6 +48,46 @@ procedure EchoPool is
         end loop;
     end Echo_Handler;
 
+    type Handler_Ptr is access all Echo_Handler;
+    type Handler_Arr is array (Positive range 1 .. 10) of Handler_Ptr;
+
+    package T_Container is new Ada.Containers.Vectors (Element_Type => Handler_Ptr,
+                                                       Index_Type   => Natural);
+
+    type Task_Pool is tagged record
+        --Busy_Tasks      : T_Container.Vector;
+        Available_Tasks : T_Container.Vector;
+        All_Tasks       : Handler_Arr;
+    end record;
+
+    procedure Acquire (T : in out Task_Pool; H : out Handler_Ptr) is
+    begin
+        while true loop
+            if T_Container.Length (T.Available_Tasks) > 0 then
+                declare
+                    Ptr : Handler_Ptr := T_Container.First_Element (T.Available_Tasks);
+                begin
+                    T_Container.Delete_First (T.Available_Tasks, 1);
+                    H := Ptr;
+
+                    -- Since we're going to be using this task now, let's put
+                    -- it into the Busy_Tasks vector
+                    --T_Container.Append (T.Busy_Tasks, Ptr);
+                    return;
+                end;
+            end if;
+
+            --  If we had no tasks available to us, we'll just busy-wait
+            delay 0.1;
+        end loop;
+    end Acquire;
+
+    procedure Release (T : in out Task_Pool; H : in Handler_Ptr) is
+    begin
+        T_Container.Append (T.Available_Tasks,  H);
+    end Release;
+
+    Pool    : Task_Pool;
     Handler : Echo_Handler;
 begin
     Initialize; -- Initialize the GNAT.Sockets library

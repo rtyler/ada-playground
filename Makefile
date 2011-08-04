@@ -17,7 +17,7 @@ twotasking:
 echoserver:
 	$(GNATMAKE)  echoserver.adb
 
-echopool:
+echopool: clean
 	$(GNATMAKE)  echopool.adb
 
 vectors:
