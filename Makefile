@@ -1,7 +1,7 @@
 
 GNATFLAGS=-gnat05
 GNATMAKE=gnat make $(GNATFLAGS)
-EXES=readself hello twotasking echoserver vectors echopool
+EXES=readself hello twotasking echoserver vectors echopool echomultitask
 
 all: $(EXES)
 
@@ -22,6 +22,9 @@ echopool: clean
 
 vectors:
 	$(GNATMAKE)  vectors.adb
+
+echomultitask:
+	$(GNATMAKE) echomultitask.adb
 
 clean:
 	rm -f *.o *.ali
