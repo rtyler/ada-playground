@@ -24,7 +24,7 @@ vectors:
 	$(GNATMAKE)  vectors.adb
 
 echomultitask:
-	$(GNATMAKE) echomultitask.adb
+	$(GNATMAKE) echomultitask_main.adb -o echomultitask
 
 clean:
 	rm -f *.o *.ali
