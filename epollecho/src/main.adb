@@ -1,4 +1,5 @@
-with Ada.Text_IO,
+with Ada.Exceptions,
+     Ada.Text_IO,
      Ada.Command_Line,
      Ada.Streams,
      Interfaces.C;
@@ -35,15 +36,20 @@ procedure Main is
     begin
         while true loop
             Ada.Streams.Read (Channel.All, Data, Offset);
-            if Offset < 0 then
-                Put_Line ("Wat!");
-            end if;
-
             exit when Offset = 0;
             Put (Character'Val (Data (1)));
         end loop;
         Put_Line (".. closing connection");
         GNAT.Sockets.Close_Socket (S);
+    exception
+        when S_Error : GNAT.Sockets.Socket_Error =>
+            if GNAT.Sockets.Resolve_Exception (S_Error) = GNAT.Sockets.Resource_Temporarily_Unavailable then
+                -- Resource_Temporarily_Unavailable means we have read all available bytes
+                -- we'll let epoll(7) call us back.
+                null;
+            else
+                raise;
+            end if;
     end Read_Data;
 
     procedure Make_Non_Blocking (S : in GNAT.Sockets.Socket_Type) is
