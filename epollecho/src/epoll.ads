@@ -49,9 +49,8 @@ package Epoll is
     end record;
     pragma Convention (C_Pass_By_Copy, Event_Type);
 
-    type Event_Array_Type is array (Positive range <>) of aliased Event_Type;
+    type Event_Array_Type is array (Integer range <>) of aliased Event_Type;
     pragma Convention (C, Event_Array_Type);
-    --for Event_Array_Type'Component_Size use Event_Type'Size;
 
 
     function Create (Size : Interfaces.C.int) return Epoll_Fd_Type;
