@@ -38,6 +38,7 @@ package body EchoMultitask.Worker is
                 exit when Offset = 0;
                 Put (Character'Val (Data (1)));
             end loop;
+            Free(Channel);
             Put_Line (".. closing connection");
             Close_Socket (Client_Sock);
         end;
